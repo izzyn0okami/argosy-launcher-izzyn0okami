@@ -3,7 +3,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
@@ -44,6 +43,12 @@ android {
 
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
+        }
+
+        if (!project.hasProperty("allAbis")) {
+            ndk {
+                abiFilters += "arm64-v8a"
+            }
         }
 
         buildConfigField("String", "TITLEDB_API_SECRET", "\"${envString("TITLEDB_API_SECRET")}\"")
@@ -176,7 +181,6 @@ composeCompiler {
             layout.projectDirectory.file("compose_stability_config.conf")
         )
     }
-    featureFlags.add(org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.IntrinsicRemember.disabled())
     featureFlags.add(org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.OptimizeNonSkippingGroups.disabled())
     featureFlags.add(org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.PausableComposition.disabled())
     if (project.hasProperty("composeMetrics")) {
@@ -197,15 +201,20 @@ val abiCodes = mapOf(
     "x86_64" to 5
 )
 
-android.applicationVariants.all {
-    outputs.all {
-        val output = this as com.android.build.gradle.internal.api.ApkVariantOutputImpl
-        val abi = output.getFilter("ABI")
+androidComponents {
+    onVariants { variant ->
         val baseVersionCode = android.defaultConfig.versionCode ?: 0
-        output.versionCodeOverride = if (abi != null) {
-            (abiCodes[abi] ?: 0) * 1_000_000 + baseVersionCode
-        } else {
-            3 * 1_000_000 + baseVersionCode
+        variant.outputs.forEach { output ->
+            val abi = output.filters
+                .firstOrNull { it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI }
+                ?.identifier
+            output.versionCode.set(
+                if (abi != null) {
+                    (abiCodes[abi] ?: 0) * 1_000_000 + baseVersionCode
+                } else {
+                    3 * 1_000_000 + baseVersionCode
+                }
+            )
         }
     }
 }

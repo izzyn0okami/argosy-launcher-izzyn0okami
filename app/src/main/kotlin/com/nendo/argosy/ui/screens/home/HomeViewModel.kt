@@ -260,7 +260,13 @@ class HomeViewModel @Inject constructor(
 
     fun createDockReorderInputHandler(isRtl: Boolean): InputHandler = dockDelegate.createInputHandler(isRtl)
 
+    @Volatile
+    private var hostedByOtherHome = false
+
     init {
+        viewModelScope.launch(Dispatchers.IO) {
+            hostedByOtherHome = !com.nendo.argosy.util.SecondaryHomeComponent.isDefaultHome(context)
+        }
         modalResetSignal.signal.onEach {
             gameMenuOpenJob?.cancel()
             gameMenuDelegate.resetMenu()
@@ -2340,6 +2346,12 @@ class HomeViewModel @Inject constructor(
 
     // --- Public API: Input Handler ---
 
+    fun requestExitToHostLauncher(): Boolean {
+        if (!hostedByOtherHome) return false
+        viewModelScope.launch { _events.emit(HomeEvent.ExitToHostLauncher) }
+        return true
+    }
+
     fun createInputHandler(
         isDefaultView: Boolean,
         onGameSelect: (Long) -> Unit,
@@ -2354,7 +2366,8 @@ class HomeViewModel @Inject constructor(
         onNavigateToDefault = onNavigateToDefault,
         onDrawerToggle = onDrawerToggle,
         onScrollOverflow = onScrollOverflow,
-        dockIsRtl = dockIsRtl
+        dockIsRtl = dockIsRtl,
+        onExitToHost = ::requestExitToHostLauncher
     )
 
     // --- HomeInputActions Implementation ---

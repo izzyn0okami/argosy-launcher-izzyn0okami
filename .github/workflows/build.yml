@@ -30,7 +30,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug -PallAbis
+        run: ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -57,7 +57,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Run unit tests
-        run: ./gradlew testDebugUnitTest -PallAbis
+        run: ./gradlew testDebugUnitTest
 
       - name: Upload test results
         if: always()
@@ -104,7 +104,7 @@ jobs:
 
       - name: Run Android Lint
         run: >-
-          ./gradlew lintDebug -PallAbis
+          ./gradlew lintDebug
           -Pkotlin.compiler.execution.strategy=in-process
           -Dorg.gradle.jvmargs="-Xmx12g -XX:+UseParallelGC -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
 

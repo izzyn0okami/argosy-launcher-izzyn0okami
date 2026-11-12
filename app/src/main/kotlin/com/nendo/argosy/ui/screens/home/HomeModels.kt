@@ -819,6 +819,7 @@ sealed class HomeEvent {
     data class LaunchIntent(val intent: Intent, val options: android.os.Bundle? = null) : HomeEvent()
     data class NavigateToCollections(val collectionId: Long) : HomeEvent()
     data object NavigateToApps : HomeEvent()
+    data object ExitToHostLauncher : HomeEvent()
     data class NavigateToLibrary(
         val platformId: Long? = null,
         val sourceFilter: String? = null,
