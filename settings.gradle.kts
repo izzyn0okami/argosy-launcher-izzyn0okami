@@ -25,4 +25,5 @@ rootProject.name = "argosy-launcher"
 include(":app")
 include(":sigil")
 project(":sigil").projectDir = file("sigil/bindings/android")
+project(":sigil").buildFileName = "../../../gradle/sigil.build.gradle.kts"
 include(":libretrodroid")
