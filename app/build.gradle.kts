@@ -175,7 +175,6 @@ composeCompiler {
             layout.projectDirectory.file("compose_stability_config.conf")
         )
     }
-    featureFlags.add(org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.IntrinsicRemember.disabled())
     featureFlags.add(org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.OptimizeNonSkippingGroups.disabled())
     featureFlags.add(org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.PausableComposition.disabled())
     if (project.hasProperty("composeMetrics")) {
@@ -196,15 +195,20 @@ val abiCodes = mapOf(
     "x86_64" to 5
 )
 
-android.applicationVariants.all {
-    outputs.all {
-        val output = this as com.android.build.gradle.internal.api.ApkVariantOutputImpl
-        val abi = output.getFilter("ABI")
+androidComponents {
+    onVariants { variant ->
         val baseVersionCode = android.defaultConfig.versionCode ?: 0
-        output.versionCodeOverride = if (abi != null) {
-            (abiCodes[abi] ?: 0) * 1_000_000 + baseVersionCode
-        } else {
-            3 * 1_000_000 + baseVersionCode
+        variant.outputs.forEach { output ->
+            val abi = output.filters
+                .firstOrNull { it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI }
+                ?.identifier
+            output.versionCode.set(
+                if (abi != null) {
+                    (abiCodes[abi] ?: 0) * 1_000_000 + baseVersionCode
+                } else {
+                    3 * 1_000_000 + baseVersionCode
+                }
+            )
         }
     }
 }
