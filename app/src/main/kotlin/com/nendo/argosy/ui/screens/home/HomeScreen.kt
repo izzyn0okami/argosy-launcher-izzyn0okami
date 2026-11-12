@@ -18,6 +18,7 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import com.nendo.argosy.ui.util.clickableNoFocus
+import com.nendo.argosy.ui.util.findActivity
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
@@ -296,9 +297,6 @@ fun HomeScreen(
         }
     }
 
-    BackHandler(enabled = true) {
-    }
-
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -324,6 +322,7 @@ fun HomeScreen(
                 HomeEvent.NavigateToApps -> onNavigateToApps()
                 is HomeEvent.PlayMedia -> onPlayMedia(event.itemId, event.startOver)
                 is HomeEvent.NavigateToMediaDetail -> onMediaSelect(event.itemId)
+                HomeEvent.ExitToHostLauncher -> context.findActivity()?.finish()
             }
         }
     }
@@ -348,6 +347,10 @@ fun HomeScreen(
                 } else false
             }
         )
+    }
+
+    BackHandler(enabled = true) {
+        inputHandler.onBack()
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current

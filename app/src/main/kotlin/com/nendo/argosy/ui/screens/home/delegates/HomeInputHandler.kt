@@ -147,7 +147,8 @@ class HomeInputHandler(
     private val onNavigateToDefault: () -> Unit,
     private val onDrawerToggle: () -> Unit,
     private val onScrollOverflow: ((direction: Int) -> Boolean)? = null,
-    private val dockIsRtl: Boolean = false
+    private val dockIsRtl: Boolean = false,
+    private val onExitToHost: () -> Boolean = { false }
 ) : InputHandler {
 
     private val focusPicker: com.nendo.argosy.DualScreenManager?
@@ -617,6 +618,7 @@ class HomeInputHandler(
             onNavigateToDefault()
             return InputResult.HANDLED
         }
+        if (onExitToHost()) return InputResult.handled(SoundType.BACK)
         return InputResult.UNHANDLED
     }
 
